@@ -136,7 +136,7 @@ Messages:
 
 If you enjoy SimpleGate and want to support its development, consider leaving a donation. It helps a lot and motivates future updates!
 
-> ☕ **[Buy me a coffee](#)** ← *(replace with your donation link)*
+> ☕ **[PayPal](https://www.paypal.com/paypalme/xeliox146)**
 
 ---
 
