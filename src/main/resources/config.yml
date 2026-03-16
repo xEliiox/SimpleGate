@@ -1,0 +1,114 @@
+Settings:
+  # Play a sound when a player teleports through a gate
+  SoundTeleportEnabled: true
+
+  # Allow Zombified Piglins to spawn from nether portals near gates
+  PigmanPortalSpawnEnabled: true
+
+  # Remove the name from the item after creating a gate (item is returned unnamed)
+  RemovingCreateToolName: true
+
+  # Consume the item after creating a gate
+  RemovingCreateToolItem: false
+
+  # Item required in hand to create a gate (must be renamed)
+  ItemRequiredToCreatePortal: "COMPASS"
+
+  # Worlds where gates cannot be created
+  DisabledWorlds:
+    - world_nether
+
+  # Maximum number of blocks a portal can contain
+  MaxPortalSize: 200
+
+  BlockRequiredToCreatePortal:
+    # Block material required in the frame to create a gate
+    Material: EMERALD_BLOCK
+    # Minimum number of the required block in the frame
+    Amount: 2
+
+  GUISettings:
+    # Inventory type for the portal selector. Options: CHEST, HOPPER, DISPENSER
+    InventoryType: HOPPER
+
+    # Number of slots (only valid for CHEST inventory type, must be multiple of 9, max 54)
+    Slots: 9
+
+    # Title of the portal selector inventory (supports hex color codes &#RRGGBB and standard color codes &)
+    Title: "&5&lSelect Portal Type"
+
+    # Fill empty slots with gray glass panes. Always false for HOPPER and DISPENSER
+    FillEmptySlots: false
+
+    # Define the portal types available in the selector GUI.
+    # Each entry has a unique numeric key (1, 2, 3...) and defines the icon shown
+    # in the inventory, the block that fills the portal, its slot position and appearance.
+    PortalsTypeItem:
+      # ParticleEffect accepts two formats:
+      # Simple:   ParticleEffect: PORTAL
+      # Advanced: ParticleEffect:
+      #             Type: DUST
+      #             Color: RED
+      1:
+        # Item displayed in the selector GUI
+        Material: OBSIDIAN
+        # Block that fills the portal interior
+        MaterialContent: NETHER_PORTAL
+        # Slot position in the inventory (starts at 0)
+        Slot: 0
+        # Display name of the item in the GUI
+        Name: "&5Nether Portal"
+        # Lore lines shown under the item name
+        Lore:
+          - "&7The content portal is Nether Portal."
+          - "&7Click to Apply this type."
+      2:
+        Material: END_PORTAL_FRAME
+        MaterialContent: END_GATEWAY
+        Slot: 1
+        Name: "&5End Portal"
+        Lore:
+          - "&7The content portal is End Portal."
+          - "&7Click to Apply this type."
+      3:
+        Material: POWDER_SNOW_BUCKET
+        MaterialContent: POWDER_SNOW
+        Slot: 2
+        Name: "&5Ice Portal"
+        Lore:
+          - "&7The content portal is Ice Portal."
+          - "&7Click to Apply this type."
+      4:
+        Material: WATER_BUCKET
+        MaterialContent: WATER
+        Slot: 3
+        Name: "&5Water Portal"
+        Lore:
+          - "&7The content portal is Water Portal."
+          - "&7Click to Apply this type."
+      5:
+        Material: SCULK_VEIN
+        MaterialContent: SCULK_VEIN
+        Slot: 4
+        Name: "&5Sculk Portal"
+        Lore:
+          - "&7The content portal is Sculk Portal."
+          - "&7Click to Apply this type."
+
+Messages:
+  prefix: "&8[&dSimpleGate&8] &r"
+  gate-created: "&aA door named &c\"{0}\" &aformed in front of you."
+  gate-destroyed: "&cThis door has been destroyed."
+  gate-limit-reached: "&cYou have reached the maximum number of doors you can create with the same name \"{0}\""
+  frame-invalid-big: "&cThere is no frame for the door or it is too big."
+  no-permission: "&cYou do not have permission to perform this action."
+  invalid-location: "&cThe specified location is invalid."
+  teleport-success: "&aTeleported to location {0}."
+  world-disabled: "&cGates are disabled in this world."
+  gate-destination-not-found: "&cThe destination gate was not found."
+  item-renamed-to-create: "&aYou must name the {0} before creating a door with it."
+  portal-blocks-not-required: "&cThe frame must contain {0}."
+  config-reload: "&aConfiguration reloaded successfully."
+  player-only: "&cOnly players can perform this command."
+  gate-overlap: "&cThis gate overlaps with another gate called {0}."
+  config-reload-error: "&cError reloading configuration: {0}"

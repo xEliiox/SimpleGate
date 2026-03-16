@@ -1,0 +1,22 @@
+name: SimpleGate
+version: '${project.version}'
+main: xeliox.simplegate.SimpleGate
+api-version: '1.13'
+author: xEliox
+website:
+description: SimpleGate is a clean and efficient portal plugin that allows you to create immersive gates using blocks — no commands required. It focuses on simplicity, performance, and modern behavior without unnecessary complexity.
+depend: [ProtocolLib]
+commands:
+  simplegate:
+    description: Main command for SimpleGate plugin.
+    aliases: [sgate, sg]
+permissions:
+  simplegate.worldbypass:
+    description: Allows bypassing world restrictions for SimpleGate.
+    default: op
+  simplegate.admin:
+    description: Grants access to admin commands for SimpleGate.
+    default: op
+  simplegate.framebypass:
+    description: Bypass frame material requirements.
+    default: op
