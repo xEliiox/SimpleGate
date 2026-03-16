@@ -13,7 +13,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Salmon;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
@@ -61,7 +60,6 @@ public class Gate {
     private Set<BlockLocation> frameCoords = new HashSet<>();
     private Set<BlockLocation> portalCoords = new HashSet<>();
     public GateOrientation orientation;
-    private Set<UUID> allowedPlayers = new HashSet<>();
     private final GatewayManager gatewayManager = plugin.getGatewayManager();
 
     public Gate() {
@@ -98,26 +96,7 @@ public class Gate {
         }
         return false;
     }
-
-    public boolean canPlayerEnter(Player player) {
-        if (!enterEnabled) {
-            return false;
-        }
-
-        if (player.hasPermission("simplegate.bypass.restriction")) {
-            return true;
-        }
-
-        if (!restricted) {
-            return true;
-        }
-
-        if (creatorId.equals(player.getUniqueId())) {
-            return true;
-        }
-
-        return allowedPlayers.contains(player.getUniqueId());
-    }
+    
 
     private int calcId() {
         HashCodeBuilder builder = new HashCodeBuilder();
