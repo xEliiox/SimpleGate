@@ -86,7 +86,6 @@ public class GateListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-
     public void onLavaFlow(BlockFromToEvent event) {
         if (event.getBlock().getType() != Material.LAVA) return;
 
@@ -96,7 +95,15 @@ public class GateListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onWaterFlow(BlockFromToEvent event) {
+        if (event.getBlock().getType() != Material.WATER) return;
 
+        if (isNearPortal(event.getToBlock())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onIgnite(BlockIgniteEvent event) {
         if (isNearPortal(event.getBlock())) {
             event.setCancelled(true);
@@ -105,7 +112,6 @@ public class GateListener implements Listener {
 
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-
     public void onBurn(BlockBurnEvent event) {
         if (isNearPortal(event.getBlock())) {
             event.setCancelled(true);
