@@ -14,6 +14,7 @@ import xeliox.simplegate.gate.GatewayManager;
 import xeliox.simplegate.listeners.GatePreventEventsListener;
 import xeliox.simplegate.listeners.GateListener;
 import xeliox.simplegate.listeners.PortalSelectorListener;
+import xeliox.simplegate.utils.UpdateChecker;
 import xeliox.simplegate.utils.VersionUtils;
 
 import java.io.File;
@@ -65,6 +66,7 @@ public final class SimpleGate extends JavaPlugin {
         }
 
         Bukkit.getScheduler().runTask(this, GateManager::startParticlesForLoadedChunks);
+        UpdateChecker.checkForUpdates(this);
     }
 
     @Override
@@ -106,8 +108,10 @@ public final class SimpleGate extends JavaPlugin {
                 break;
             case "1.21.9":
             case "1.21.10":
-            case "1.21.11":
                 versionUtils = VersionUtils.v1_21_R6;
+                break;
+            case "1.21.11":
+                versionUtils = VersionUtils.v1_21_R7;
                 break;
             default:
                 try {
