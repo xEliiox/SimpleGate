@@ -17,6 +17,7 @@ import xeliox.simplegate.gate.GateManager;
 import xeliox.simplegate.gate.GatewayManager;
 import xeliox.simplegate.utils.BoundingBoxFactory;
 import xeliox.simplegate.utils.IBoundingBox;
+import xeliox.simplegate.utils.UpdateChecker;
 
 import java.util.Map;
 import java.util.Set;
@@ -200,7 +201,8 @@ public class GatePreventEventsListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    private void refreshFakeEndGatewayOnJoin(PlayerJoinEvent event) {
+    public void refreshFakeEndGatewayOnJoin(PlayerJoinEvent event) {
+        UpdateChecker.checkForUpdates(plugin);
         Player player = event.getPlayer();
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!player.isOnline()) return;
@@ -209,7 +211,7 @@ public class GatePreventEventsListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    private void refreshFakeEndGatewayOnInteract(PlayerInteractEvent event) {
+    public void refreshFakeEndGatewayOnInteract(PlayerInteractEvent event) {
         if (event.getClickedBlock() == null) return;
         Player player = event.getPlayer();
         Location location = event.getClickedBlock().getLocation();
