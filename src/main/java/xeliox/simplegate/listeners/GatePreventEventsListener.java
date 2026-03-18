@@ -202,7 +202,6 @@ public class GatePreventEventsListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void refreshFakeEndGatewayOnJoin(PlayerJoinEvent event) {
-        UpdateChecker.checkForUpdates(plugin);
         Player player = event.getPlayer();
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!player.isOnline()) return;
