@@ -113,6 +113,9 @@ public final class SimpleGate extends JavaPlugin {
             case "1.21.11":
                 versionUtils = VersionUtils.v1_21_R7;
                 break;
+            case "26.1":
+                versionUtils = VersionUtils.v26_1_R1;
+                break;
             default:
                 try {
                     versionUtils = VersionUtils.valueOf(packageName.replace("org.bukkit.craftbukkit.", ""));
