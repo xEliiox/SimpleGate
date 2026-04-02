@@ -6,7 +6,7 @@
 
     <groupId>xeliox</groupId>
     <artifactId>SimpleGate</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>SimpleGate</name>
@@ -49,7 +49,7 @@
                                     <shadedPattern>xeliox.simplegate.libs.commons</shadedPattern>
                                 </relocation>
                             </relocations>
-
+                            <minimizeJar>true</minimizeJar>
                         </configuration>
                     </execution>
                 </executions>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.21.11-R0.1-SNAPSHOT</version>
+            <version>26.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
