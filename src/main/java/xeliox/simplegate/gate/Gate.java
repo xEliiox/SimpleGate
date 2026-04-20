@@ -20,13 +20,12 @@ import xeliox.simplegate.config.ParticleData;
 import xeliox.simplegate.config.PortalType;
 import xeliox.simplegate.SimpleGate;
 import xeliox.simplegate.State;
+import xeliox.simplegate.managers.GateManager;
+import xeliox.simplegate.managers.GatewayManager;
 import xeliox.simplegate.teleport.BlockLocation;
 import xeliox.simplegate.teleport.Destination;
 import xeliox.simplegate.teleport.TeleporterException;
-import xeliox.simplegate.utils.ParticleType;
-import xeliox.simplegate.utils.TeleportUtil;
-import xeliox.simplegate.utils.VersionCheck;
-import xeliox.simplegate.utils.VoidUtil;
+import xeliox.simplegate.utils.*;
 
 
 import java.lang.reflect.Method;
@@ -96,7 +95,7 @@ public class Gate {
         }
         return false;
     }
-    
+
 
     private int calcId() {
         HashCodeBuilder builder = new HashCodeBuilder();
@@ -173,11 +172,10 @@ public class Gate {
     }
 
     public void transport(Player player) throws TeleporterException {
-
         for (Gate gate : calcGatesInChainAfterThis()) {
             if (!gate.exitEnabled) continue;
+            fxKitUse(player);
             TeleportUtil.teleport(player, gate.exit);
-            fxKitUse();
             return;
         }
     }
@@ -190,18 +188,14 @@ public class Gate {
         } else {
             direction.setY(h);
         }
-        
+
         direction.multiply(s);
         player.setVelocity(direction);
 
-        Sound sound;
-        try {
-            sound = Sound.valueOf("ENTITY_BAT_TAKEOFF");
-        }catch (IllegalArgumentException e) {
-            sound = Sound.valueOf("BAT_TAKEOFF");
-        }
+        Sound sound = resolveNoDestinationSound();
+        if (sound == null) return;
 
-        player.getWorld().playSound(player.getLocation(), sound, 1.0f, 1.0f);
+        player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
     }
 
     public List<Gate> calcGatesInChainAfterThis() {
@@ -424,14 +418,10 @@ public class Gate {
     }
 
     public void fxKitCreate() {
-        fxShootSound();
+        fxKitUse();
         startPortalParticles();
     }
 
-    public void fxKitUse() {
-        if (!plugin.getConfigManager().isSoundTeleportEnabled()) return;
-        fxShootSound();
-    }
 
     public void startPortalParticles() {
         if (activeTasks.containsKey(this)) return;
@@ -591,6 +581,18 @@ public class Gate {
         return fakeEndGateway;
     }
 
+    public boolean isExitEnabled() {
+        return exitEnabled;
+    }
+
+    public boolean isEnterEnabled() {
+        return enterEnabled;
+    }
+
+    public boolean isRestricted() {
+        return restricted;
+    }
+
     public void setFakeEndGateway(boolean fakeEndGateway) {
         this.fakeEndGateway = fakeEndGateway;
     }
@@ -599,9 +601,64 @@ public class Gate {
         this.portalType = portalType;
     }
 
-    public void fxShootSound() {
+    public void fxKitUse(Player player) {
+        if (plugin.getConfigManager().isSoundTeleportEnabled()) return;
+        playPortalSound(player);
+    }
+
+    public void fxKitUse() {
+        if (plugin.getConfigManager().isSoundTeleportEnabled()) return;
         Block block = getCenterBlock();
         if (block == null) return;
-        block.getWorld().playEffect(block.getLocation(), Effect.GHAST_SHOOT, 0);
+        Sound sound = resolvePortalSound();
+        if (sound == null) return;
+        block.getWorld().playSound(block.getLocation(), sound, 1.0f, 1.0f);
+    }
+
+    private static final Map<String, Effect> SOUND_TO_EFFECT = new HashMap<>();
+    static {
+        SOUND_TO_EFFECT.put("ENTITY_GHAST_SHOOT", Effect.GHAST_SHOOT);
+        SOUND_TO_EFFECT.put("ENTITY_GHAST_SHRIEK", Effect.GHAST_SHRIEK);
+        SOUND_TO_EFFECT.put("ENTITY_BLAZE_SHOOT", Effect.BLAZE_SHOOT);
+    }
+
+    private void playPortalSound(Player player) {
+        String configuredSound = plugin.getConfigManager().getPortalSound();
+
+        boolean played = false;
+
+        Sound sound = Util.getSoundByName(configuredSound);
+        if (sound != null) {
+            player.getWorld().playSound(player.getLocation(), sound, 1.0f, 1.0f);
+            played = true;
+        }
+
+        Effect effect = SOUND_TO_EFFECT.get(configuredSound.toUpperCase());
+        if (effect != null) {
+            player.getWorld().playEffect(player.getLocation(), effect, 0);
+            played = true;
+        }
+
+        if (!played) {
+            Bukkit.getLogger().warning("[SimpleGate] No valid sound or effect found: " + configuredSound);
+        }
+    }
+
+    private Sound resolvePortalSound() {
+        String configuredSound = plugin.getConfigManager().getPortalSound();
+        Sound sound = Util.getSoundByName(configuredSound);
+        if (sound == null) sound = Util.getSoundByName("ENTITY_GHAST_SHOOT");
+        if (sound == null) sound = Util.getSoundByName("GHAST_SHOOT");
+        if (sound == null) Bukkit.getLogger().warning("No valid sound found for portal sound.");
+        return sound;
+    }
+
+    private Sound resolveNoDestinationSound() {
+        String configuredSound = plugin.getConfigManager().getPortalNoDestinationSound();
+        Sound sound = Util.getSoundByName(configuredSound);
+        if (sound == null) sound = Util.getSoundByName("ENTITY_BAT_TAKEOFF");
+        if (sound == null) sound = Util.getSoundByName("BAT_TAKEOFF");
+        if (sound == null) Bukkit.getLogger().warning("No valid sound found for portal no destination sound.");
+        return sound;
     }
 }
