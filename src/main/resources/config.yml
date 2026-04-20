@@ -1,7 +1,23 @@
 Settings:
+  # Enable or disable the plugin's update checker (checks for new versions on SpigotMC)
+  UpdateChecker: true
   # Play a sound when a player teleports through a gate
   SoundTeleportEnabled: true
-
+  # Maximum number of gates per network (min: 2, max: 10)
+  GateLimitPerNetwork: 2
+  # Sound when creating/using a portal
+  PortalSound: "ENTITY_GHAST_SHOOT"
+  # Sound when the portal has no destination (knockback)
+  # 1.8-1.12: BAT_TAKEOFF | 1.13+: ENTITY_BAT_TAKEOFF
+  PortalNoDestinationSound: "ENTITY_BAT_TAKEOFF"
+  # Teleport mobs that enter a gate (if false, only players will be teleported)
+  MobTeleportation: true
+  # Teleport leashed mobs that enter a gate (if false, leashed mobs will not be teleported)
+  LeashedMobTeleportation: true
+  # Teleport tamed mobs that enter a gate (if false, tamed mobs will not be teleported)
+  TamedMobTeleportation: false
+  # Teleport vehicles that enter a gate (if false, players in vehicles will be teleported but the vehicle will not be teleported with them)
+  VehicleTeleportation: true
   # Allow Zombified Piglins to spawn from nether portals near gates
   PigmanPortalSpawnEnabled: true
 
@@ -94,21 +110,3 @@ Settings:
         Lore:
           - "&7The content portal is Sculk Portal."
           - "&7Click to Apply this type."
-
-Messages:
-  prefix: "&8[&dSimpleGate&8] &r"
-  gate-created: "&aA door named &c\"{0}\" &aformed in front of you."
-  gate-destroyed: "&cThis door has been destroyed."
-  gate-limit-reached: "&cYou have reached the maximum number of doors you can create with the same name \"{0}\""
-  frame-invalid-big: "&cThere is no frame for the door or it is too big."
-  no-permission: "&cYou do not have permission to perform this action."
-  invalid-location: "&cThe specified location is invalid."
-  teleport-success: "&aTeleported to location {0}."
-  world-disabled: "&cGates are disabled in this world."
-  gate-destination-not-found: "&cThe destination gate was not found."
-  item-renamed-to-create: "&aYou must name the {0} before creating a door with it."
-  portal-blocks-not-required: "&cThe frame must contain {0}."
-  config-reload: "&aConfiguration reloaded successfully."
-  player-only: "&cOnly players can perform this command."
-  gate-overlap: "&cThis gate overlaps with another gate called {0}."
-  config-reload-error: "&cError reloading configuration: {0}"
