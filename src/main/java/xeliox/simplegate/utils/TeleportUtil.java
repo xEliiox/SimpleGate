@@ -20,21 +20,7 @@ public class TeleportUtil {
 
     public static void teleportPlayer(Player player, Destination destination) throws TeleporterException {
         Location location = getLocation(destination);
-
-        // Eject passengers and unmount before transport
-        player.eject();
-        if (player.getVehicle() != null) {
-            player.getVehicle().eject();
-        }
-
-
-
-        Location finalLocation = location.clone();
-
-
-        // Do the teleport
-        player.teleport(finalLocation);
-
+        player.teleport(location.clone());
         Bukkit.getScheduler().runTask(SimpleGate.getInstance(), () -> {
             if (!player.isOnline()) return;
             player.setFireTicks(0);
@@ -42,18 +28,16 @@ public class TeleportUtil {
     }
 
     private static @NotNull Location getLocation(Destination destination) throws TeleporterException {
-        Location location;
         try {
             World world = destination.getBukkitWorld();
-            double locationX = destination.getLocation().getBlockX();
-            double locationY = destination.getLocation().getBlockY();
-            double locationZ = destination.getLocation().getBlockZ();
+            double x = destination.getLocation().getBlockX() + 0.5;
+            double y = destination.getLocation().getBlockY();
+            double z = destination.getLocation().getBlockZ() + 0.5;
             float pitch = destination.getHeading().getPitch();
             float yaw = destination.getHeading().getYaw();
-            location = new Location(world, locationX, locationY, locationZ, yaw, pitch);
+            return new Location(world, x, y, z, yaw, pitch);
         } catch (Exception e) {
             throw new TeleporterException(Messages.PREFIX.getMessage() + Messages.INVALID_LOCATION.getMessage() + e.getMessage());
         }
-        return location;
     }
 }
