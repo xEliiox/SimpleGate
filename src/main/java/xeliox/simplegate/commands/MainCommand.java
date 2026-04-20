@@ -4,8 +4,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.jetbrains.annotations.NotNull;
 import xeliox.simplegate.SimpleGate;
 import xeliox.simplegate.config.Messages;
+import xeliox.simplegate.config.Permissions;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -20,33 +22,30 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
 
         if (args.length == 0) {
-            sender.sendMessage(Messages.USAGE.getMessage());
             return true;
         }
 
-        switch (args[0].toLowerCase()) {
-
-            case "reload":
-                if (!sender.hasPermission("simplegate.admin")) {
-                    sender.sendMessage(Messages.PREFIX.getMessage() + Messages.NO_PERMISSION.getMessage());
-                    return true;
-                }
-                try {
-                    plugin.getConfigManager().reloadConfig();
-                    sender.sendMessage(Messages.PREFIX.getMessage() + Messages.CONFIG_RELOAD.getMessage());
-                } catch (IOException e) {
-                    sender.sendMessage(Messages.PREFIX.getMessage() + Messages.CONFIG_RELOAD_ERROR.getMessage().replace("{0}", e.getMessage()));
-                }
+        if (args[0].equalsIgnoreCase("reload")) {
+            if (!Permissions.ADMIN.has(sender)) {
+                sender.sendMessage(Messages.PREFIX.getMessage() + Messages.NO_PERMISSION.getMessage());
                 return true;
+            }
+            try {
+                plugin.getConfigManager().reload();
+                sender.sendMessage(Messages.PREFIX.getMessage() + Messages.CONFIG_RELOAD.getMessage());
+            } catch (IOException e) {
+                sender.sendMessage(Messages.PREFIX.getMessage() + Messages.CONFIG_RELOAD_ERROR.getMessage().replace("{0}", e.getMessage()));
+            }
+            return true;
         }
         return false;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
             return Collections.singletonList("reload");
         }
