@@ -33,14 +33,6 @@ public class BlockLocation {
         );
     }
 
-    public Location getCenterLocation(String worldName) {
-        return new Location(
-                Bukkit.getWorld(worldName),
-                blockX + 0.5,
-                blockY + 0.5,
-                blockZ + 0.5
-        );
-    }
 
     @Override
     public int hashCode() {
