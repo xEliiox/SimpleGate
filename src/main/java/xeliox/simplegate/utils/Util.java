@@ -1,7 +1,8 @@
 package xeliox.simplegate.utils;
 
-import org.bukkit.Material;
+import org.bukkit.*;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -91,7 +92,32 @@ public class Util {
         return implodeCommaAndDot(objects, comma, and, "");
     }
 
+    public static Sound getSoundByName(String name) {
+        if (name == null) return null;
 
+        try {
+            Class<?> soundClass = Class.forName("org.bukkit.Sound");
+            Method valueOf = soundClass.getMethod("valueOf", String.class);
+            return (Sound) valueOf.invoke(null, name.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        } catch (Exception ignored) {}
 
+        try {
+            String key = name.toLowerCase().replace("_", ".");
+            NamespacedKey namespacedKey = NamespacedKey.minecraft(key);
+            return Registry.SOUNDS.get(namespacedKey);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
+    public static Effect getEffectByName(String name) {
+        if (name == null) return null;
+        try {
+            return Effect.valueOf(name.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
 }
