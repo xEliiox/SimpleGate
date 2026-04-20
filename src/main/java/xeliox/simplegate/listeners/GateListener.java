@@ -6,7 +6,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -19,10 +21,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import xeliox.simplegate.SimpleGate;
 import xeliox.simplegate.State;
-import xeliox.simplegate.config.ConfigManager;
+import xeliox.simplegate.config.Permissions;
+import xeliox.simplegate.managers.ConfigManager;
 import xeliox.simplegate.config.Messages;
 import xeliox.simplegate.gate.Gate;
-import xeliox.simplegate.gate.GateManager;
+import xeliox.simplegate.managers.GateManager;
 import xeliox.simplegate.gate.GateOrientation;
 import xeliox.simplegate.teleport.BlockLocation;
 import xeliox.simplegate.teleport.Destination;
@@ -60,6 +63,16 @@ public class GateListener implements Listener {
         }
     }
 
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onExplosion(EntityExplodeEvent event) {
+        for (Block block : event.blockList()) {
+            if (GateManager.Portals.get(block) != null) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerCombust(EntityCombustEvent event) {
@@ -188,7 +201,6 @@ public class GateListener implements Listener {
 
         Player player = event.getPlayer();
         Location to = event.getTo();
-        Material endGatewayMaterial = Material.valueOf("END_GATEWAY");
         if (to == null) return;
 
         Gate gate = getGateAtOrNear(to);
@@ -211,7 +223,39 @@ public class GateListener implements Listener {
             return;
         }
 
-        gate.transport(player);
+        if (config.isLeashedMobTeleportationEnabled()) {
+            Set<LivingEntity> leashed = LeashUtil.getLeashedEntities(player);
+
+            Map<LivingEntity, Entity> leashMap = new HashMap<>();
+            for (LivingEntity mob : leashed) {
+                if (mob.isLeashed() && mob.getLeashHolder().equals(player)) {
+                    leashMap.put(mob, player);
+                    mob.setLeashHolder(null);
+                }
+            }
+
+            gate.transport(player);
+
+            if (!leashMap.isEmpty()) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    Location dest = player.getLocation();
+                    for (LivingEntity mob : leashMap.keySet()) {
+                        if (!mob.isValid()) continue;
+                        mob.teleport(dest);
+                        mob.setLeashHolder(player);
+                        plugin.getMobPortalListener().setCooldown(mob);
+                        mob.setLeashHolder(null);
+                        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                            if (!mob.isValid()) return;
+                            if (!player.isOnline()) return;
+                            mob.setLeashHolder(player);
+                        }, 1L);
+                    }
+                }, 6L);
+            }
+        } else {
+            gate.transport(player);
+        }
     }
 
     /* ---------------- HELPERS ---------------- */
@@ -294,7 +338,7 @@ public class GateListener implements Listener {
 
             String worldName = player.getWorld().getName();
 
-            if (!player.hasPermission("simplegate.worldbypass")
+            if (!player.hasPermission(Permissions.WORLD_BYPASS.get())
                     && config.getDisabledWorlds().stream().anyMatch(w -> w.equalsIgnoreCase(worldName))) {
                 player.sendMessage(Messages.PREFIX.getMessage() + Messages.WORLD_DISABLED.getMessage());
                 return;
@@ -326,7 +370,7 @@ public class GateListener implements Listener {
             Map<Material, Long> materialCounts = MaterialCountUtil.count(solidFrameBlocks);
             Map<Material,Long> required = config.getBlockRequiredToCreatePortal();
 
-            if (!player.hasPermission("simplegate.framebypass")) {
+            if (!player.hasPermission(Permissions.FRAME_BYPASS.get())) {
                 if (!MaterialCountUtil.has(materialCounts, required)) {
 
                     String reqBlocks = MaterialCountUtil.desc(required);
@@ -374,8 +418,9 @@ public class GateListener implements Listener {
 
 
             int existing = GateManager.getByNetworkId(gate.creatorId, networkId).size();
+            int limit = config.getGateLimitPerNetwork();
 
-            if (existing >= 2) {
+            if (existing >= limit) {
                 player.sendMessage(
                         Messages.PREFIX.getMessage()
                                 + Messages.GATE_LIMIT_REACHED.getMessage()
