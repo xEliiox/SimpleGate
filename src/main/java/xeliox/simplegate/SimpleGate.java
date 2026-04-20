@@ -7,14 +7,15 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
-import xeliox.simplegate.config.ConfigManager;
+import xeliox.simplegate.config.core.Config;
+import xeliox.simplegate.config.core.MessagesConfig;
+import xeliox.simplegate.listeners.*;
+import xeliox.simplegate.managers.ConfigManager;
 import xeliox.simplegate.config.Messages;
-import xeliox.simplegate.gate.GateManager;
-import xeliox.simplegate.gate.GatewayManager;
-import xeliox.simplegate.listeners.GatePreventEventsListener;
-import xeliox.simplegate.listeners.GateListener;
-import xeliox.simplegate.listeners.PortalSelectorListener;
-import xeliox.simplegate.utils.UpdateChecker;
+import xeliox.simplegate.managers.GateManager;
+import xeliox.simplegate.managers.GatewayManager;
+import xeliox.simplegate.managers.UpdateCheckerManager;
+import xeliox.simplegate.utils.UpdateCheckerResult;
 import xeliox.simplegate.utils.VersionUtils;
 
 import java.io.File;
@@ -32,8 +33,9 @@ public final class SimpleGate extends JavaPlugin {
     public static VersionUtils versionUtils;
     private PortalSelectorListener portalSelectorListener;
     private GatewayManager gatewayManager;
+    private EntityGateListener entityGateListener;
+    private VehicleGateListener vehicleGateListener;
     private final String author = getDescription().getAuthors().isEmpty() ? "Unknown" : getDescription().getAuthors().get(0);
-
 
     @Override
     public void onEnable() {
@@ -41,7 +43,9 @@ public final class SimpleGate extends JavaPlugin {
         instance = this;
         Logger logger = getLogger();
         try {
-            configManager = new ConfigManager(this,logger);
+            Config config = new Config(this, logger);
+            MessagesConfig messagesConfig = new MessagesConfig(this, logger);
+            configManager = new ConfigManager(config, messagesConfig);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -55,7 +59,12 @@ public final class SimpleGate extends JavaPlugin {
 
         this.portalSelectorListener = new PortalSelectorListener(this);
         GatePreventEventsListener gatePreventEventsListener = new GatePreventEventsListener();
-
+        this.entityGateListener = new EntityGateListener(this);
+        this.vehicleGateListener = new VehicleGateListener(this);
+        registerEvents(entityGateListener);
+        registerEvents(vehicleGateListener);
+        entityGateListener.start();
+        vehicleGateListener.start();
         registerEvents(new GateListener());
         registerEvents(portalSelectorListener);
         registerEvents(new xeliox.simplegate.listeners.ChunkListener());
@@ -66,7 +75,9 @@ public final class SimpleGate extends JavaPlugin {
         }
 
         Bukkit.getScheduler().runTask(this, GateManager::startParticlesForLoadedChunks);
-        UpdateChecker.checkForUpdates(this);
+        if (configManager.isUpdateCheckerEnabled()) {
+            runUpdateChecker();
+        }
     }
 
     @Override
@@ -77,6 +88,8 @@ public final class SimpleGate extends JavaPlugin {
         console.sendMessage(ColorAPI.translate(Messages.PREFIX.getMessage() + "&fBased on &bCreativeGatez &fby &cmarcotama &fand &bCreativeGates &fby &cMassiveCraft"));
         GateManager.stopAllParticles();
         GateManager.saveAll(new File("plugins/SimpleGate/gates"));
+        entityGateListener.stop();
+        vehicleGateListener.stop();
     }
 
     public void setVersion(){
@@ -127,6 +140,51 @@ public final class SimpleGate extends JavaPlugin {
         }
     }
 
+    private void runUpdateChecker() {
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            UpdateCheckerManager checker = new UpdateCheckerManager(version);
+            UpdateCheckerResult result = checker.check();
+
+            Bukkit.getScheduler().runTask(this, () -> {
+                String prefix = Messages.PREFIX.getMessage();
+
+                switch (result.getStatus()) {
+                    case UPDATE_AVAILABLE:
+                        console.sendMessage(ColorAPI.translate(
+                                prefix + "&6¡New version available! &fCurrent: &c" + version +
+                                        " &f→ &aLatest: " + result.getLatestVersion()
+                        ));
+                        console.sendMessage(ColorAPI.translate(
+                                prefix + "&fDownload: &bhttps://www.spigotmc.org/resources/simplegate.133505/"
+                        ));
+                        break;
+
+                    case DEV_BUILD:
+                        console.sendMessage(ColorAPI.translate(
+                                prefix + "&d&lDEV BUILD: &fYou are using a version &5superior &fto SpigotMC."
+                        ));
+                        console.sendMessage(ColorAPI.translate(
+                                prefix + "&fVersion: &b" + version + " &7(Latest on Spigot: " + result.getLatestVersion() + ")"
+                        ));
+                        break;
+
+                    case UP_TO_DATE:
+                        console.sendMessage(ColorAPI.translate(
+                                prefix + "&aThe plugin is updated. &f(" + version + ")"
+                        ));
+                        break;
+
+                    case ERROR:
+                    default:
+                        console.sendMessage(ColorAPI.translate(
+                                prefix + "&eUpdate checker: Could not connect to SpigotMC."
+                        ));
+                        break;
+                }
+            });
+        });
+    }
+
     private void registerEvents(Listener Listener) {
         Bukkit.getPluginManager().registerEvents(Listener, this);
     }
@@ -142,6 +200,10 @@ public final class SimpleGate extends JavaPlugin {
     public GatewayManager getGatewayManager() {
         return gatewayManager;
     }
+
+    public EntityGateListener getMobPortalListener() { return entityGateListener; }
+
+    public VehicleGateListener getVehiclePortalListener() { return vehicleGateListener; }
 
     public PortalSelectorListener getPortalSelectorListener() {
         return portalSelectorListener;
