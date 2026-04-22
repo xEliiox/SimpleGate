@@ -51,7 +51,6 @@ public class Config {
         load();
     }
 
-    // ── Delegados básicos ──────────────────────────────────────────────────────
 
     public boolean contains(String path) {
         return yaml.contains(path);
@@ -73,8 +72,6 @@ public class Config {
         return yaml.createSection(path);
     }
 
-    // ── Helpers con defaults ───────────────────────────────────────────────────
-
     @SuppressWarnings("unchecked")
     public <T> T getOrSetDefault(String path, T defaultValue, boolean[] saveFlag) {
         if (!contains(path)) {
@@ -93,10 +90,5 @@ public class Config {
         }
         Object value = get(path);
         return (value instanceof Number) ? ((Number) value).intValue() : defaultValue;
-    }
-
-    /** Expone el YamlFile crudo solo para casos que lo necesiten (ej: Messages). */
-    public YamlFile getRaw() {
-        return yaml;
     }
 }
