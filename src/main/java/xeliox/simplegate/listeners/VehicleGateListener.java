@@ -65,20 +65,22 @@ public class VehicleGateListener implements Listener {
                 for (Entity entity : block.getWorld().getNearbyEntities(
                         block.getLocation().add(0.5, 0.5, 0.5), 0.8, 0.8, 0.8)) {
 
-                    if (!(entity instanceof Vehicle)) continue;
-                    Vehicle vehicle = (Vehicle) entity;
+                    boolean isVehicle = entity instanceof Vehicle;
+                    boolean hasMountedPassengers = !getPassengers(entity).isEmpty();
 
-                    if (isOnCooldown(vehicle)) continue;
-                    if (!canVehicleTeleport(vehicle, gate)) continue;
+                    if (!isVehicle && !hasMountedPassengers) continue;
 
-                    tryTransportVehicle(vehicle, gate);
+                    if (isOnCooldown(entity)) continue;
+                    if (!canEntityTeleport(entity, gate)) continue;
+
+                    tryTransportEntity(entity, gate);
                 }
             }
         }
     }
 
-    private boolean canVehicleTeleport(Vehicle vehicle, Gate gate) {
-        for (Entity passenger : vehicle.getPassengers()) {
+    private boolean canEntityTeleport(Entity entity, Gate gate) {
+        for (Entity passenger : getPassengers(entity)) {
             if (passenger instanceof Tameable) {
                 Tameable tameable = (Tameable) passenger;
                 if (tameable.isTamed()) {
@@ -100,50 +102,50 @@ public class VehicleGateListener implements Listener {
         return GateManager.Portals.get(owner.getLocation().getBlock()) == gate;
     }
 
-    private void tryTransportVehicle(Vehicle vehicle, Gate gate) {
+    private void tryTransportEntity(Entity entity, Gate gate) {
         try {
-            transportVehicle(vehicle, gate);
+            transportEntity(entity, gate);
         } catch (TeleporterException e) {
-            plugin.getLogger().warning("Failed to teleport vehicle " + vehicle.getType() +
-                    " (UUID: " + vehicle.getUniqueId() + "): " + e.getMessage());
+            plugin.getLogger().warning("Failed to teleport vehicle " + entity.getType() +
+                    " (UUID: " + entity.getUniqueId() + "): " + e.getMessage());
         }
     }
 
-    private void transportVehicle(Vehicle vehicle, Gate gate) throws TeleporterException {
+    private void transportEntity(Entity entity, Gate gate) throws TeleporterException {
         for (Gate exitGate : gate.calcGatesInChainAfterThis()) {
             if (!exitGate.isExitEnabled()) continue;
 
             Location target = buildLocation(exitGate.exit);
 
-            List<Entity> passengers = new ArrayList<>(vehicle.getPassengers());
-            Vector originalVelocity = vehicle.getVelocity().clone();
+            List<Entity> passengers = new ArrayList<>(getPassengers(entity));
+            Vector originalVelocity = entity.getVelocity().clone();
 
             target.getChunk().load();
 
-            vehicle.setMetadata(METADATA_KEY, new FixedMetadataValue(plugin, originalVelocity));
+            entity.setMetadata(METADATA_KEY, new FixedMetadataValue(plugin, originalVelocity));
 
-            boolean success = vehicle.teleport(target);
+            boolean success = entity.teleport(target);
             if (!success) {
                 target.getChunk().load(true);
-                vehicle.teleport(target);
+                entity.teleport(target);
             }
 
-            new PassengerReattachTask(vehicle, passengers, originalVelocity).runTaskTimer(plugin, 2L, 3L);
+            new PassengerReattachTask(entity, passengers, originalVelocity).runTaskTimer(plugin, 2L, 3L);
 
-            setCooldown(vehicle);
+            setCooldown(entity);
             gate.fxKitUse();
             return;
         }
     }
 
     private class PassengerReattachTask extends BukkitRunnable {
-        private final Vehicle vehicle;
+        private final Entity vehicle;
         private final List<Entity> expectedPassengers;
         private final Vector originalVelocity;
         private int attempts = 0;
         private boolean impulseApplied = false;
 
-        public PassengerReattachTask(Vehicle vehicle, List<Entity> passengers, Vector originalVelocity) {
+        public PassengerReattachTask(Entity vehicle, List<Entity> passengers, Vector originalVelocity) {
             this.vehicle = vehicle;
             this.expectedPassengers = new ArrayList<>(passengers);
             this.originalVelocity = originalVelocity.clone();
@@ -163,12 +165,12 @@ public class VehicleGateListener implements Listener {
                 currentLoc.getChunk().load();
             }
 
-            List<Entity> currentPassengers = vehicle.getPassengers();
+            List<Entity> currentPassengers = getPassengers(vehicle);
             for (Entity expected : expectedPassengers) {
                 if (!expected.isValid()) continue;
                 if (!currentPassengers.contains(expected)) {
                     expected.teleport(currentLoc);
-                    vehicle.addPassenger(expected);
+                    addPassenger(vehicle, expected);
                 }
             }
 
@@ -190,12 +192,14 @@ public class VehicleGateListener implements Listener {
                 vehicle.setFireTicks(0);
             }
 
-            boolean allPassengersOnboard = expectedPassengers.stream().allMatch(e -> !e.isValid() || vehicle.getPassengers().contains(e));
+            boolean allPassengersOnboard = expectedPassengers.stream()
+                    .allMatch(e -> !e.isValid() || vehicle.getPassengers().contains(e));
             boolean done = allPassengersOnboard && (!(vehicle instanceof Minecart) || impulseApplied);
 
             if (done || attempts >= 10) {
                 if (attempts >= 10) {
-                    plugin.getLogger().warning("Passenger reattachment for vehicle " + vehicle.getType() + " (UUID: " + vehicle.getUniqueId() + ") took too long, giving up.");
+                    plugin.getLogger().warning("Passenger reattachment for vehicle " + vehicle.getType() +
+                            " (UUID: " + vehicle.getUniqueId() + ") took too long, giving up.");
                 }
                 vehicle.removeMetadata(METADATA_KEY, plugin);
                 cancel();
@@ -208,7 +212,7 @@ public class VehicleGateListener implements Listener {
         if (event.getEntity() instanceof Vehicle) {
             Vehicle vehicle = (Vehicle) event.getEntity();
             if (vehicle.hasMetadata(METADATA_KEY)) {
-                // No Use case for now, but could be used for debugging or future features
+                // No use case for now, but could be used for debugging or future features
             }
         }
     }
@@ -227,12 +231,36 @@ public class VehicleGateListener implements Listener {
         }
     }
 
-    private boolean isOnCooldown(Vehicle vehicle) {
-        Long until = cooldowns.get(vehicle.getUniqueId());
+    private boolean isOnCooldown(Entity entity) {
+        Long until = cooldowns.get(entity.getUniqueId());
         return until != null && until > System.currentTimeMillis();
     }
 
-    private void setCooldown(Vehicle vehicle) {
-        cooldowns.put(vehicle.getUniqueId(), System.currentTimeMillis() + COOLDOWN_MS);
+    private void setCooldown(Entity entity) {
+        cooldowns.put(entity.getUniqueId(), System.currentTimeMillis() + COOLDOWN_MS);
+    }
+
+    @SuppressWarnings("deprecation")
+    private List<Entity> getPassengers(Entity entity) {
+        try {
+            // 1.9+
+            return entity.getPassengers();
+        } catch (NoSuchMethodError e) {
+            List<Entity> list = new ArrayList<>();
+            Entity passenger = entity.getPassenger();
+            if (passenger != null) list.add(passenger);
+            return list;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void addPassenger(Entity vehicle, Entity passenger) {
+        try {
+            // 1.9+
+            vehicle.addPassenger(passenger);
+        } catch (NoSuchMethodError e) {
+            // 1.8 fallback
+            vehicle.setPassenger(passenger);
+        }
     }
 }
