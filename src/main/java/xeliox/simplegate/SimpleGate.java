@@ -1,6 +1,6 @@
 package xeliox.simplegate;
 
-import api.xeliox.colorapi.ColorAPI;
+import io.github.xeliiox.colorapi.ColorAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
@@ -127,6 +127,8 @@ public final class SimpleGate extends JavaPlugin {
                 versionUtils = VersionUtils.v1_21_R7;
                 break;
             case "26.1":
+            case "26.1.1":
+            case "26.1.2":
                 versionUtils = VersionUtils.v26_1_R1;
                 break;
             default:
