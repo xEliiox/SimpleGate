@@ -1,6 +1,6 @@
 package xeliox.simplegate.config;
 
-import api.xeliox.colorapi.ColorAPI;
+import io.github.xeliiox.colorapi.ColorAPI;
 import xeliox.simplegate.config.core.MessagesConfig;
 
 public enum Messages {
