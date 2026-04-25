@@ -1,6 +1,7 @@
 package xeliox.simplegate.listeners;
 
-import api.xeliox.colorapi.ColorAPI;
+
+import io.github.xeliiox.colorapi.ColorAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,7 +14,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import xeliox.simplegate.SimpleGate;
-import xeliox.simplegate.config.ConfigManager;
+import xeliox.simplegate.managers.ConfigManager;
 import xeliox.simplegate.config.PortalType;
 import xeliox.simplegate.gate.Gate;
 
