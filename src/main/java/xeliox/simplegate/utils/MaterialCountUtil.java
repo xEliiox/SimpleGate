@@ -1,6 +1,6 @@
 package xeliox.simplegate.utils;
 
-import api.xeliox.colorapi.ColorAPI;
+import io.github.xeliiox.colorapi.ColorAPI;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
