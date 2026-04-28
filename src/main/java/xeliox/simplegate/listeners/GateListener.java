@@ -212,6 +212,7 @@ public class GateListener implements Listener {
         }
 
         if (player.isDead()) return;
+        if (player.isInsideVehicle()) return;
 
         if (gate.hasNoExitEnabled()) {
             if (gate.containsMaterial(Material.LAVA)) {
