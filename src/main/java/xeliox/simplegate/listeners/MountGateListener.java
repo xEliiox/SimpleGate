@@ -16,10 +16,12 @@ import xeliox.simplegate.gate.Gate;
 import xeliox.simplegate.managers.GateManager;
 import xeliox.simplegate.teleport.Destination;
 import xeliox.simplegate.teleport.TeleporterException;
+import xeliox.simplegate.utils.BoundingBoxFactory;
+import xeliox.simplegate.utils.IBoundingBox;
 
 import java.util.*;
 
-public class VehicleGateListener implements Listener {
+public class MountGateListener implements Listener {
 
     private static final long SCAN_INTERVAL_TICKS = 4L;
     private static final long COOLDOWN_MS = 2000L;
@@ -28,7 +30,7 @@ public class VehicleGateListener implements Listener {
     private final Map<UUID, Long> cooldowns = new HashMap<>();
     private BukkitTask scanTask;
 
-    public VehicleGateListener(SimpleGate plugin) {
+    public MountGateListener(SimpleGate plugin) {
         this.plugin = plugin;
     }
 
@@ -60,18 +62,21 @@ public class VehicleGateListener implements Listener {
 
             List<org.bukkit.block.Block> portalBlocks = gate.getPortalBlocks();
             if (portalBlocks == null || portalBlocks.isEmpty()) continue;
-
             for (org.bukkit.block.Block block : portalBlocks) {
                 for (Entity entity : block.getWorld().getNearbyEntities(
-                        block.getLocation().add(0.5, 0.5, 0.5), 0.8, 0.8, 0.8)) {
+                        block.getLocation().add(0.5, 0.5, 0.5), 2.0, 2.0, 2.0)) {
 
                     boolean isVehicle = entity instanceof Vehicle;
                     boolean hasMountedPassengers = !getPassengers(entity).isEmpty();
 
                     if (!isVehicle && !hasMountedPassengers) continue;
-
+                    if (entity.isInsideVehicle()) continue;
                     if (isOnCooldown(entity)) continue;
                     if (!canEntityTeleport(entity, gate)) continue;
+
+                    IBoundingBox entityBox = BoundingBoxFactory.of(entity);
+                    IBoundingBox portalBox = BoundingBoxFactory.of(block);
+                    if (!entityBox.intersects(portalBox)) continue;
 
                     tryTransportEntity(entity, gate);
                 }
@@ -80,6 +85,14 @@ public class VehicleGateListener implements Listener {
     }
 
     private boolean canEntityTeleport(Entity entity, Gate gate) {
+        if (entity instanceof Tameable) {
+            Tameable tameable = (Tameable) entity;
+            if (tameable.isTamed()) {
+                if (!plugin.getConfigManager().isTamedMobTeleportationEnabled()) return false;
+                if (!isOwnerCrossingPortal(tameable, gate)) return false;
+            }
+        }
+
         for (Entity passenger : getPassengers(entity)) {
             if (passenger instanceof Tameable) {
                 Tameable tameable = (Tameable) passenger;
@@ -133,6 +146,9 @@ public class VehicleGateListener implements Listener {
             new PassengerReattachTask(entity, passengers, originalVelocity).runTaskTimer(plugin, 2L, 3L);
 
             setCooldown(entity);
+            for (Entity passenger : passengers) {
+                setCooldown(passenger);
+            }
             gate.fxKitUse();
             return;
         }
