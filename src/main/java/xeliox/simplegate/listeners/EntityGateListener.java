@@ -23,7 +23,7 @@ public class EntityGateListener implements Listener {
     private static final long SCAN_INTERVAL_TICKS = 4L;
     private static final long COOLDOWN_MS = 2000L;
     private final SimpleGate plugin;
-    private final Map<Integer, Long> cooldowns = new HashMap<>();
+    private final Map<UUID, Long> cooldowns = new HashMap<>();
     private final Map<UUID, Gate> portalSpawnedIn = new HashMap<>();
     private BukkitTask scanTask;
 
@@ -47,7 +47,7 @@ public class EntityGateListener implements Listener {
 
     public void clearCooldownsForChunk(org.bukkit.Chunk chunk) {
         for (Entity entity : chunk.getEntities()) {
-            cooldowns.remove(entity.getEntityId());
+            cooldowns.remove(entity.getUniqueId());
             portalSpawnedIn.remove(entity.getUniqueId());
         }
     }
@@ -83,8 +83,10 @@ public class EntityGateListener implements Listener {
                     if (entity instanceof Player) continue;
                     LivingEntity living = (LivingEntity) entity;
 
-                    // VehicleGateListener
+                    // MountGateListener
                     if (living.isInsideVehicle()) continue;
+                    // MountGateListener
+                    if (living.getPassengers().stream().anyMatch(p -> p instanceof Player)) continue;
                     // LeashUtil
                     if (living.isLeashed()) {
                         continue;
@@ -124,8 +126,11 @@ public class EntityGateListener implements Listener {
 
             Location target = buildLocation(exitGate.exit);
 
-            entity.eject();
-            if (entity.getVehicle() != null) entity.getVehicle().eject();
+            if (entity.getPassengers().isEmpty()) {
+                entity.eject();
+                if (entity.getVehicle() != null) entity.getVehicle().eject();
+            }
+
             entity.teleport(target);
 
             portalSpawnedIn.remove(entity.getUniqueId());
@@ -159,11 +164,11 @@ public class EntityGateListener implements Listener {
     }
 
     private boolean isOnCooldown(Entity entity) {
-        Long until = cooldowns.get(entity.getEntityId());
+        Long until = cooldowns.get(entity.getUniqueId());
         return until != null && until > System.currentTimeMillis();
     }
 
     public void setCooldown(Entity entity) {
-        cooldowns.put(entity.getEntityId(), System.currentTimeMillis() + COOLDOWN_MS);
+        cooldowns.put(entity.getUniqueId(), System.currentTimeMillis() + COOLDOWN_MS);
     }
 }
