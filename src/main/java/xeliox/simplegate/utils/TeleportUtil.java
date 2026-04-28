@@ -20,6 +20,12 @@ public class TeleportUtil {
 
     public static void teleportPlayer(Player player, Destination destination) throws TeleporterException {
         Location location = getLocation(destination);
+        if (!player.isInsideVehicle()) {
+            player.eject();
+            if (player.getVehicle() != null) {
+                player.getVehicle().eject();
+            }
+        }
         player.teleport(location.clone());
         Bukkit.getScheduler().runTask(SimpleGate.getInstance(), () -> {
             if (!player.isOnline()) return;
