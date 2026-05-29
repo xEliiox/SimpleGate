@@ -55,6 +55,7 @@ public class MountGateListener implements Listener {
 
     private void scanVehiclesInPortals() {
         if (!plugin.getConfigManager().isVehicleTeleportationEnabled()) return;
+        if (GateManager.getAllGates().isEmpty()) return;
 
         for (Gate gate : GateManager.getAllGates()) {
             if (!gate.isIntact()) continue;
