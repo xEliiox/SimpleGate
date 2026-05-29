@@ -67,6 +67,7 @@ public class EntityGateListener implements Listener {
 
     private void scanMobsInPortals() {
         if (!plugin.getConfigManager().isMobTeleportationEnabled()) return;
+        if (GateManager.getAllGates().isEmpty()) return;
 
         for (Gate gate : GateManager.getAllGates()) {
             if (!gate.isIntact()) continue;
