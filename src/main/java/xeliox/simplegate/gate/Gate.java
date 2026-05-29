@@ -61,6 +61,10 @@ public class Gate {
     public GateOrientation orientation;
     private final GatewayManager gatewayManager = plugin.getGatewayManager();
 
+    private transient Boolean intactCache = null;
+    private transient List<Block> frameBlocksCache = null;
+    private transient List<Block> portalBlocksCache = null;
+
     public Gate() {
 
     }
@@ -215,12 +219,16 @@ public class Gate {
 
     @JsonIgnore
     public List<Block> getFrameBlocks() {
-        return findBlocks(frameCoords);
+        if (frameBlocksCache != null) return frameBlocksCache;
+        frameBlocksCache = findBlocks(frameCoords);
+        return frameBlocksCache;
     }
 
     @JsonIgnore
     public List<Block> getPortalBlocks() {
-        return findBlocks(portalCoords);
+        if (portalBlocksCache != null) return portalBlocksCache;
+        portalBlocksCache = findBlocks(portalCoords);
+        return portalBlocksCache;
     }
 
 
@@ -254,12 +262,26 @@ public class Gate {
 
     @JsonIgnore
     public boolean isIntact() {
+        if (intactCache != null) return intactCache;
         List<Block> blocks = getFrameBlocks();
-        if (blocks == null) return true;
-        for (Block block : blocks) {
-            if (VoidUtil.isVoid(block)) return false;
+        if (blocks == null) {
+            intactCache = true;
+            return true;
         }
+        for (Block block : blocks) {
+            if (VoidUtil.isVoid(block)) {
+                intactCache = false;
+                return false;
+            }
+        }
+        intactCache = true;
         return true;
+    }
+
+    public void invalidateIntactCache() {
+        intactCache = null;
+        frameBlocksCache = null;
+        portalBlocksCache = null;
     }
 
     private boolean isPortalMaterial(Material material) {
