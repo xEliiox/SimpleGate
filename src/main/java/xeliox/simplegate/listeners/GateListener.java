@@ -276,6 +276,9 @@ public class GateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void destroyGate(BlockBreakEvent event) {
+        Block block = event.getBlock();
+
+        GateManager.Frames.get(block).forEach(Gate::invalidateIntactCache);
 
         boolean destroyed = destroyGate(event.getBlock());
         if (!destroyed) return;
@@ -285,18 +288,29 @@ public class GateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void destroyGate(EntityChangeBlockEvent event) {
-        destroyGate(event.getBlock());
+        Block block = event.getBlock();
+
+        GateManager.Frames.get(block).forEach(Gate::invalidateIntactCache);
+
+        destroyGate(block);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void destroyGate(BlockFadeEvent event) {
-        destroyGate(event.getBlock());
+        Block block = event.getBlock();
 
+        GateManager.Frames.get(block).forEach(Gate::invalidateIntactCache);
+
+        destroyGate(block);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void destroyGate(BlockBurnEvent event) {
-        destroyGate(event.getBlock());
+        Block block = event.getBlock();
+
+        GateManager.Frames.get(block).forEach(Gate::invalidateIntactCache);
+
+        destroyGate(block);
     }
 
     /* ---------------- TOOLS ---------------- */
