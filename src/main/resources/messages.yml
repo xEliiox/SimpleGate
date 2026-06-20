@@ -15,3 +15,4 @@ Messages:
   PlayerOnly: "&cOnly players can perform this command."
   GateOverlap: "&cThis gate overlaps with another gate called {0}."
   ConfigReloadError: "&cError reloading configuration: {0}"
+  CombatBlocked: "&cYou cannot use portals while in combat."
