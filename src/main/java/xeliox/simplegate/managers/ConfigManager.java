@@ -42,6 +42,8 @@ public class ConfigManager {
     private int gateLimitPerNetwork;
     private ConfigurationSection section;
 
+    private final CombatManager combatManager = new CombatManager();
+
     private Map<Integer, PortalType> portalTypes;
 
     public ConfigManager(Config config, MessagesConfig messagesConfig) throws IOException {
@@ -113,6 +115,26 @@ public class ConfigManager {
         portalSound = config.getOrSetDefault("Settings.PortalSound", "ENTITY_GHAST_SHOOT", saveRequired);
         portalNoDestinationSound = config.getOrSetDefault("Settings.PortalNoDestinationSound", "ENTITY_BAT_TAKEOFF", saveRequired);
         gateLimitPerNetwork = config.getIntOrDefault("Settings.GateLimitPerNetwork", 2, saveRequired);
+        boolean blockTeleportInCombat = config.getOrSetDefault("Settings.BlockTeleportInCombat", true, saveRequired);
+        int internalCombatTagSeconds = config.getIntOrDefault("Settings.InternalCombatTagSeconds", 10, saveRequired);
+        boolean hookDeluxeCombat = config.getOrSetDefault("Settings.CombatHooks.DeluxeCombat", true, saveRequired);
+        boolean hookCombatLogX = config.getOrSetDefault("Settings.CombatHooks.CombatLogX", true, saveRequired);
+        boolean hookPvPManager = config.getOrSetDefault("Settings.CombatHooks.PvPManager", true, saveRequired);
+
+        if (internalCombatTagSeconds < 0) {
+            internalCombatTagSeconds = 0;
+            config.set("Settings.InternalCombatTagSeconds", 0);
+            saveRequired[0] = true;
+        }
+
+        combatManager.load(
+                blockTeleportInCombat,
+                internalCombatTagSeconds,
+                hookDeluxeCombat,
+                hookCombatLogX,
+                hookPvPManager,
+                Bukkit.getLogger()
+        );
 
         if (gateLimitPerNetwork > 10 || gateLimitPerNetwork < 2) {
             gateLimitPerNetwork = 2;
@@ -196,5 +218,6 @@ public class ConfigManager {
     public String getPortalNoDestinationSound() { return portalNoDestinationSound; }
     public int getMaxPortalSize()                { return maxPortalSize; }
     public int getGateLimitPerNetwork() { return gateLimitPerNetwork; }
+    public CombatManager getCombatManager() { return combatManager; }
 
 }
