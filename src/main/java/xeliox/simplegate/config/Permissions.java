@@ -4,7 +4,8 @@ public enum Permissions {
 
     ADMIN("simplegate.admin"),
     WORLD_BYPASS("simplegate.worldbypass"),
-    FRAME_BYPASS("simplegate.framebypass");
+    FRAME_BYPASS("simplegate.framebypass"),
+    COMBAT_BYPASS("simplegate.combat.bypass");
 
     private final String permission;
 
