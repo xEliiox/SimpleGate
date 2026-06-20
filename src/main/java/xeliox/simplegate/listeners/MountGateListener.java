@@ -79,6 +79,12 @@ public class MountGateListener implements Listener {
                     IBoundingBox portalBox = BoundingBoxFactory.of(block);
                     if (!entityBox.intersects(portalBox)) continue;
 
+                    Player blockedPassenger = getCombatBlockedPassenger(entity);
+                    if (blockedPassenger != null) {
+                        plugin.getConfigManager().getCombatManager().blockPortalUse(blockedPassenger, gate);
+                        continue;
+                    }
+
                     tryTransportEntity(entity, gate);
                 }
             }
@@ -95,6 +101,12 @@ public class MountGateListener implements Listener {
         }
 
         for (Entity passenger : getPassengers(entity)) {
+            if (passenger instanceof Player) {
+                Player player = (Player) passenger;
+                if (plugin.getConfigManager().getCombatManager().isInCombat(player)) {
+                    return false;
+                }
+            }
             if (passenger instanceof Tameable) {
                 Tameable tameable = (Tameable) passenger;
                 if (tameable.isTamed()) {
@@ -108,6 +120,18 @@ public class MountGateListener implements Listener {
             }
         }
         return true;
+    }
+
+    private Player getCombatBlockedPassenger(Entity entity) {
+        for (Entity passenger : getPassengers(entity)) {
+            if (passenger instanceof Player) {
+                Player player = (Player) passenger;
+                if (plugin.getConfigManager().getCombatManager().isInCombat(player)) {
+                    return player;
+                }
+            }
+        }
+        return null;
     }
 
     private boolean isOwnerCrossingPortal(Tameable tameable, Gate gate) {
