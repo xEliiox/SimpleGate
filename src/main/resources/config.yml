@@ -21,6 +21,18 @@ Settings:
   # Allow Zombified Piglins to spawn from nether portals near gates
   PigmanPortalSpawnEnabled: true
 
+  # Block portal teleportation while the player is in combat
+  BlockTeleportInCombat: true
+
+  # Built-in combat tag duration (seconds) used when no supported combat plugin is detected
+  InternalCombatTagSeconds: 10
+
+  # Auto-detect and hook into installed combat plugins (reflection, no hard dependency)
+  CombatHooks:
+    DeluxeCombat: true
+    CombatLogX: true
+    PvPManager: true
+
   # Remove the name from the item after creating a gate (item is returned unnamed)
   RemovingCreateToolName: true
 
