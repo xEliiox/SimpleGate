@@ -224,6 +224,10 @@ public class GateListener implements Listener {
             return;
         }
 
+        if (config.getCombatManager().blockPortalUse(player, gate)) {
+            return;
+        }
+
         if (config.isLeashedMobTeleportationEnabled()) {
             Set<LivingEntity> leashed = LeashUtil.getLeashedEntities(player);
 
