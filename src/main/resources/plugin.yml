@@ -6,6 +6,7 @@ author: xEliox
 website: https://github.com/xEliiox/SimpleGate
 description: SimpleGate is a clean and efficient portal plugin that allows you to create immersive gates using blocks — no commands required. It focuses on simplicity, performance, and modern behavior without unnecessary complexity.
 depend: [ProtocolLib]
+softdepend: [DeluxeCombat, CombatLogX, PvPManager]
 commands:
   simplegate:
     description: Main command for SimpleGate plugin.
@@ -19,4 +20,7 @@ permissions:
     default: op
   simplegate.framebypass:
     description: Bypass frame material requirements.
+    default: op
+  simplegate.combat.bypass:
+    description: Bypass combat restrictions when using portals.
     default: op
