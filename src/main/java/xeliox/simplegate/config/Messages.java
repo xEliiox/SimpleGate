@@ -19,7 +19,8 @@ public enum Messages {
     CONFIG_RELOAD("Messages.ConfigReloaded", "&aConfiguration reloaded successfully."),
     PLAYER_ONLY("Messages.PlayerOnly", "&cOnly players can perform this command."),
     GATE_OVERLAP("Messages.GateOverlap", "&cThis gate overlaps with another gate called {0}."),
-    CONFIG_RELOAD_ERROR("Messages.ConfigReloadError", "&cError reloading configuration: {0}");
+    CONFIG_RELOAD_ERROR("Messages.ConfigReloadError", "&cError reloading configuration: {0}"),
+    COMBAT_BLOCKED("Messages.CombatBlocked", "&cYou cannot use portals while in combat.");
 
     public final String path;
     public final String defaultMessage;
