@@ -34,7 +34,7 @@ public final class SimpleGate extends JavaPlugin {
     private PortalSelectorListener portalSelectorListener;
     private GatewayManager gatewayManager;
     private EntityGateListener entityGateListener;
-    private VehicleGateListener vehicleGateListener;
+    private MountGateListener mountGateListener;
     private final String author = getDescription().getAuthors().isEmpty() ? "Unknown" : getDescription().getAuthors().get(0);
 
     @Override
@@ -60,15 +60,16 @@ public final class SimpleGate extends JavaPlugin {
         this.portalSelectorListener = new PortalSelectorListener(this);
         GatePreventEventsListener gatePreventEventsListener = new GatePreventEventsListener();
         this.entityGateListener = new EntityGateListener(this);
-        this.vehicleGateListener = new VehicleGateListener(this);
+        this.mountGateListener = new MountGateListener(this);
         registerEvents(entityGateListener);
-        registerEvents(vehicleGateListener);
+        registerEvents(mountGateListener);
         entityGateListener.start();
-        vehicleGateListener.start();
+        mountGateListener.start();
         registerEvents(new GateListener());
         registerEvents(portalSelectorListener);
         registerEvents(new xeliox.simplegate.listeners.ChunkListener());
         registerEvents(gatePreventEventsListener);
+        registerEvents(configManager.getCombatManager().getInternalTagger());
         PluginCommand command = this.getCommand("simplegate");
         if (command != null) {
             command.setExecutor(new xeliox.simplegate.commands.MainCommand(this));
@@ -89,7 +90,7 @@ public final class SimpleGate extends JavaPlugin {
         GateManager.stopAllParticles();
         GateManager.saveAll(new File("plugins/SimpleGate/gates"));
         entityGateListener.stop();
-        vehicleGateListener.stop();
+        mountGateListener.stop();
     }
 
     public void setVersion(){
@@ -205,7 +206,7 @@ public final class SimpleGate extends JavaPlugin {
 
     public EntityGateListener getMobPortalListener() { return entityGateListener; }
 
-    public VehicleGateListener getVehiclePortalListener() { return vehicleGateListener; }
+    public MountGateListener getVehiclePortalListener() { return mountGateListener; }
 
     public PortalSelectorListener getPortalSelectorListener() {
         return portalSelectorListener;
